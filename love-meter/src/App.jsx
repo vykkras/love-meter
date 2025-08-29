@@ -3,8 +3,19 @@ import { useState, useEffect } from "react";
 export default function App() {
   const [amount, setAmount] = useState(1);
   const [shown, setShown] = useState([]);
-  
-  const SIDEBAR_WIDTH = 420;
+
+  // Responsive sidebar width (caps at 420px, ~80vw on small screens)
+  const [sidebarW, setSidebarW] = useState(420);
+  useEffect(() => {
+    function computeWidth() {
+      const cap = 420;
+      const w = Math.min(cap, Math.floor(window.innerWidth * 0.8));
+      setSidebarW(w);
+    }
+    computeWidth();
+    window.addEventListener("resize", computeWidth);
+    return () => window.removeEventListener("resize", computeWidth);
+  }, []);
 
   const [wiggle, setWiggle] = useState(false);
 
@@ -24,7 +35,7 @@ export default function App() {
       return () => clearTimeout(t);
     }
   }, [amount, shown.length]);
-  
+
   // Ordered so French, Spanish, English are always first
   const phrases = [
     { lang: "Français", text: "Je t'aime" },
@@ -74,7 +85,11 @@ export default function App() {
     { lang: "Interlingua", text: "Io ama te" },
     { lang: "Toki Pona", text: "mi olin e sina" },
     { lang: "Morse", text: ".. / .-.. --- ...- . / -.-- --- ..-" },
-    { lang: "Binary (fun)", text: "01001001 00100000 01101100 01101111 01110110 01100101 00100000 01111001 01101111 01110101" },
+    {
+      lang: "Binary (fun)",
+      text:
+        "01001001 00100000 01101100 01101111 01110110 01100101 00100000 01111001 01101111 01110101",
+    },
     { lang: "Emoji", text: "❤️➡️🫵" },
     { lang: "Sindarin (Elvish)", text: "Gi melin" },
     { lang: "Quenya (Elvish)", text: "Melinyel" },
@@ -108,13 +123,14 @@ export default function App() {
         color: "#e2e8f0",
         fontFamily:
           "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
-        paddingRight: shown.length > 0 ? SIDEBAR_WIDTH : 0,
+        paddingRight: shown.length > 0 ? sidebarW : 0,
         transition: "padding-right 180ms ease",
       }}
     >
       <style>{`
         @keyframes wiggle { 0%,100%{ transform: translateX(0)} 15%{ transform: translateX(-2px)} 30%{ transform: translateX(2px)} 45%{ transform: translateX(-2px)} 60%{ transform: translateX(2px)} 75%{ transform: translateX(-1px)} 90%{ transform: translateX(1px)} }
       `}</style>
+
       {/* Main content (left) */}
       <div
         style={{
@@ -136,14 +152,22 @@ export default function App() {
               boxShadow: "0 10px 30px rgba(0,0,0,.35)",
             }}
           >
-            <h1 style={{ fontSize: 28, margin: 0, marginBottom: 12 }}>💘 Dans combien de langues m'aimes-tu ?</h1>
+            <h1 style={{ fontSize: 28, margin: 0, marginBottom: 12 }}>
+              💘 Dans combien de langues m'aimes-tu ?
+            </h1>
             <p style={{ opacity: 0.85, marginTop: 0 }}>
-              Choisis un nombre de <strong>1</strong> à <strong>100</strong>, puis appuie
-              sur le bouton.
+              Choisis un nombre de <strong>1</strong> à <strong>100</strong>, puis fais
+              glisser le curseur.
             </p>
-            
 
-            <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                marginTop: 12,
+              }}
+            >
               <input
                 type="range"
                 min={1}
@@ -156,13 +180,28 @@ export default function App() {
                 }}
                 style={{ flex: 1 }}
               />
-              <div style={{ width: 56, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{amount}</div>
+              <div
+                style={{
+                  width: 56,
+                  textAlign: "center",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {amount}
+              </div>
             </div>
           </div>
 
-          <p style={{ textAlign: "center", marginTop: 18, opacity: 0.6, fontSize: 12 }}>
-            Astuce : déplace le curseur puis clique à nouveau pour changer le nombre de
-            langues affichées. Si tu dépasses la liste, elle se répète.
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: 18,
+              opacity: 0.6,
+              fontSize: 12,
+            }}
+          >
+            Astuce : déplace le curseur pour changer le nombre de langues affichées. Si tu
+            dépasses la liste, elle se répète.
           </p>
         </div>
       </div>
@@ -175,11 +214,8 @@ export default function App() {
             top: 0,
             right: 0,
             bottom: 0,
-            width: 420,
-            width: SIDEBAR_WIDTH,
+            width: sidebarW,
             maxWidth: "92vw",
-            background: "#0f172a",
-            borderLeft: "1px solid #1f2a44",
             background: sidebarColors(amount).bg,
             borderLeft: `1px solid ${sidebarColors(amount).border}`,
             boxShadow: "-12px 0 30px rgba(0,0,0,.35)",
@@ -226,7 +262,9 @@ export default function App() {
                   borderBottom: "1px solid #152036",
                 }}
               >
-                <span style={{ opacity: 0.6, textAlign: "right" }}># {item.index}</span>
+                <span style={{ opacity: 0.6, textAlign: "right" }}>
+                  # {item.index}
+                </span>
                 <strong>{item.lang}</strong>
                 <span>{item.text}</span>
               </div>
